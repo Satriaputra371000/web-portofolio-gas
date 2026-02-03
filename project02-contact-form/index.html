@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<?!= include('style'); ?>
+</head>
+<body>
+<h1>Contact Form</h1>
+<form id="contactForm">
+<input type="text" name="name" placeholder="Your Name" required />
+<input type="email" name="email" placeholder="Your Email" required />
+<textarea name="message" placeholder="Message" required></textarea>
+<button type="submit">Send</button>
+</form>
+<div id="status"></div>
+<?!= include('script'); ?>
+</body>
+</html>
