@@ -1,6 +1,6 @@
 # Web App GAS - Session 1
 Demo Web App:
-https://script.google.com/macros/s/AKfycbz1Uyoaf2mrP5siZOOVrqGCf0xA0nceUhESL4MwZeY/dev
+https://script.google.com/macros/s/AKfycbwj8XlpPI9tgWVCLLu5ktJPoOyunCMPALW1jb9mgwhU/dev
 ## Tech Stack
 - Google Apps Script
 - HTML
