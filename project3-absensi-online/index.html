@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Online</title>
+  <?!= include('style'); ?>
+</head>
+<body>
+  <h2>📋 Sistem Absensi Online</h2>
+  <button id="logoutBtn" onclick="logout()" style="display:none">🚪 Logout</button>
+  
+  <div id="loginSection">
+    <h3>🔐 Login Mahasiswa</h3>
+    <input type="text" id="nim" placeholder="Masukkan NIM (contoh: 12345678)" autocomplete="off">
+    <button onclick="login()" id="loginBtn">Login</button> <!-- TAMBAH ID -->
+    <p style="color: #7f8c8d; font-size: 14px; margin-top: 15px;">
+      <small>Masukkan NIM yang terdaftar di sistem</small>
+    </p>
+  </div>
+  
+  <div id="absensiSection" style="display:none">
+    <h3>✏️ Form Absensi</h3>
+    <div style="background-color: #e8f4fc; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+      <strong>Mahasiswa:</strong> <span id="currentUser"></span><br>
+      <strong>NIM:</strong> <span id="currentNIM"></span>
+    </div>
+    
+    <input type="text" id="makul" placeholder="Masukkan Nama Mata Kuliah" autocomplete="off">
+    <select id="status">
+      <option value="Hadir">Hadir</option>
+      <option value="Izin">Izin</option>
+      <option value="Alpha">Alpha</option>
+    </select>
+    <button onclick="submitAbsensi()" id="submitBtn">📤 Kirim Absensi</button> <!-- TAMBAH ID -->
+    
+    <h3>📊 Data Absensi</h3>
+    <table border="1" width="100%">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>NIM</th>
+          <th>Prodi</th>
+          <th>Waktu</th>
+          <th>Mata Kuliah</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="absensiBody">
+        <tr>
+          <td colspan="6">Data akan muncul di sini...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <?!= include('script'); ?>
+</body>
+</html>
