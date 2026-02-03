@@ -1,0 +1,199 @@
+<script>
+let currentNIM = '';
+let isLoading = false;
+
+function login() {
+  if (isLoading) return;
+  
+  const nimInput = document.getElementById('nim');
+  const nim = nimInput.value.trim();
+  const loginBtn = document.getElementById('loginBtn');
+  
+  if (!nim) {
+    alert('Silakan masukkan NIM');
+    nimInput.focus();
+    return;
+  }
+  
+  // Tampilkan loading
+  isLoading = true;
+  loginBtn.textContent = 'Memproses...';
+  loginBtn.disabled = true;
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      isLoading = false;
+      loginBtn.textContent = 'Login';
+      loginBtn.disabled = false;
+      handleLogin(res);
+    })
+    .withFailureHandler(function(error) {
+      isLoading = false;
+      loginBtn.textContent = 'Login';
+      loginBtn.disabled = false;
+      alert('Terjadi kesalahan: ' + error.message);
+      console.error('Login error:', error);
+    })
+    .login(nim);
+}
+
+function handleLogin(res) {
+  if (res.status === 'success') {
+    currentNIM = res.nim;
+    sessionStorage.setItem('nim', currentNIM);
+    
+    // Update UI
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('absensiSection').style.display = 'block';
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('currentNIM').textContent = currentNIM;
+    
+    // Reset form
+    document.getElementById('nim').value = '';
+    
+    // Load data absensi
+    loadAbsensi();
+  } else {
+    alert(res.message || 'Login gagal');
+  }
+}
+
+function submitAbsensi() {
+  if (isLoading) return;
+  
+  const makul = document.getElementById('makul').value.trim();
+  const status = document.getElementById('status').value;
+  const submitBtn = document.getElementById('submitBtn');
+  
+  if (!makul) {
+    alert('Silakan masukkan mata kuliah');
+    document.getElementById('makul').focus();
+    return;
+  }
+  
+  if (!currentNIM) {
+    alert('Sesi login telah berakhir. Silakan login kembali.');
+    logout();
+    return;
+  }
+  
+  const data = {
+    nim: currentNIM,
+    makul: makul,
+    status: status
+  };
+  
+  // Tampilkan loading
+  isLoading = true;
+  submitBtn.textContent = 'Menyimpan...';
+  submitBtn.disabled = true;
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      isLoading = false;
+      submitBtn.textContent = '📤 Kirim Absensi';
+      submitBtn.disabled = false;
+      
+      if (res.status === 'success') {
+        alert(res.message);
+        document.getElementById('makul').value = '';
+        loadAbsensi();
+      } else {
+        alert(res.message);
+      }
+    })
+    .withFailureHandler(function(error) {
+      isLoading = false;
+      submitBtn.textContent = '📤 Kirim Absensi';
+      submitBtn.disabled = false;
+      alert('Gagal menyimpan absensi. Silakan coba lagi.');
+      console.error('Submit error:', error);
+    })
+    .submitAbsensi(data);
+}
+
+function loadAbsensi() {
+  google.script.run
+    .withSuccessHandler(renderTable)
+    .withFailureHandler(function(error) {
+      document.getElementById('absensiBody').innerHTML = 
+        '<tr><td colspan="6">Gagal memuat data</td></tr>';
+      console.error('Load absensi error:', error);
+    })
+    .getAbsensiList();
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('absensiBody');
+  
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6">Belum ada data absensi</td></tr>';
+    return;
+  }
+  
+  let html = '';
+  data.forEach((r, index) => {
+    const rowClass = index % 2 === 0 ? 'even' : 'odd';
+    const statusClass = r.status === 'Hadir' ? 'hadir' : 
+                       r.status === 'Izin' ? 'izin' : 'alpha';
+    
+    html += `
+    <tr class="${rowClass}">
+      <td>${r.nama || '-'}</td>
+      <td>${r.nim || '-'}</td>
+      <td>${r.prodi || '-'}</td>
+      <td>${r.jam || '-'}</td>
+      <td>${r.makul || '-'}</td>
+      <td class="status ${statusClass}">${r.status || '-'}</td>
+    </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function logout() {
+  currentNIM = '';
+  sessionStorage.removeItem('nim');
+  
+  document.getElementById('loginSection').style.display = 'block';
+  document.getElementById('absensiSection').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'none';
+  
+  // Reset form
+  document.getElementById('nim').value = '';
+  document.getElementById('makul').value = '';
+}
+
+// Auto login jika session masih ada
+window.onload = function() {
+  const savedNIM = sessionStorage.getItem('nim');
+  if (savedNIM) {
+    // Validasi NIM masih valid
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res.status === 'success') {
+          currentNIM = savedNIM;
+          document.getElementById('loginSection').style.display = 'none';
+          document.getElementById('absensiSection').style.display = 'block';
+          document.getElementById('logoutBtn').style.display = 'block';
+          document.getElementById('currentNIM').textContent = currentNIM;
+          loadAbsensi();
+        } else {
+          sessionStorage.removeItem('nim');
+        }
+      })
+      .withFailureHandler(function() {
+        sessionStorage.removeItem('nim');
+      })
+      .login(savedNIM);
+  }
+  
+  // Enter key untuk login
+  document.getElementById('nim').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      login();
+    }
+  });
+};
+</script>
